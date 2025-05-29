@@ -2,6 +2,7 @@
 using Telegram.Bot.Types.Enums;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Pipegram.Binders;
+using Pipegram.Interceptions;
 
 namespace Pipegram.Routing;
 
@@ -10,6 +11,7 @@ public static class CallbackQueryRouter_ServiceCollectionExtensions
     public static IServiceCollection AddCallbackQueryRouting(this IServiceCollection services)
     {
         services.AddRouting();
+        services.TryAddSingleton<IMessageInterceptor, MessageInterceptor>();
         services.TryAddSingleton<IControllerFactoryBinder, DefaultControllerFactoryBinder>();
         services.TryAddSingleton<IControllerActionBinder, DefaultControllerActionBinder>();
         services.TryAddSingleton<IActionControllerEndpointResolver, DefaultActionControllerEndpointResolver>();

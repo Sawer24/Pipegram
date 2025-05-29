@@ -8,9 +8,9 @@ public static class CallbackQueryController_TelegramBotExtensions
 {
     public static ITelegramBot MapCallbackQueryController<TController>(this ITelegramBot bot)
         where TController : CallbackQueryControllerBase
-        => bot.MapCallbackController(typeof(TController));
+        => bot.MapCallbackQueryController(typeof(TController));
 
-    public static ITelegramBot MapCallbackController(this ITelegramBot bot, Type controllerType)
+    public static ITelegramBot MapCallbackQueryController(this ITelegramBot bot, Type controllerType)
     {
         if (!typeof(CallbackQueryControllerBase).IsAssignableFrom(controllerType))
             throw new ArgumentException($"Type '{controllerType}' is not a valid callback query controller type.");

@@ -12,5 +12,5 @@ public interface ITelegramBot
 
     ITelegramBot Use(Func<UpdateDelegate, UpdateDelegate> middleware);
 
-    Task RunAsync(CancellationToken stoppingToken); 
+    Task RunAsync(CancellationToken stoppingToken = default);
 }

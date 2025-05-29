@@ -28,7 +28,7 @@ public class TelegramBot(TelegramBotClientOptions options,
         return this;
     }
 
-    public async Task RunAsync(CancellationToken stoppingToken)
+    public async Task RunAsync(CancellationToken stoppingToken = default)
     {
         _pipeline = BuildPipeline();
         _client = new TelegramBotClient(_options, cancellationToken: stoppingToken);
