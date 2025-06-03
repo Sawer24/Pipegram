@@ -85,9 +85,16 @@ internal static class MiddlewareInvokeBinder
 
         var expressions = new Expression[parameters.Length];
         for (var i = 0; i < parameters.Length; i++)
+        {
+            if (parameters[i].ParameterType == typeof(UpdateContext))
+            {
+                expressions[i] = contextParameter;
+                continue;
+            }
             expressions[i] = Expression.TypeAs(
                 Expression.Call(services, getServiceMethod, Expression.Constant(parameters[i].ParameterType)),
                 parameters[i].ParameterType);
+        }
 
         var call = (Expression)Expression.Call(Expression.Constant(instance), method, expressions);
         var lambda = Expression.Lambda<UpdateDelegate>(call, contextParameter);
