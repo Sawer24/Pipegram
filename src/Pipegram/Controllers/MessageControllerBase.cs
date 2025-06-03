@@ -9,8 +9,6 @@ namespace Pipegram.Controllers;
 
 public abstract class MessageControllerBase : TelegramControllerBase
 {
-    private IMessageInterceptor? _messageInterceptor;
-
     public Message Message => Update.Message
         ?? throw new InvalidOperationException("Update.Message is null.");
 
@@ -20,12 +18,13 @@ public abstract class MessageControllerBase : TelegramControllerBase
 
     public Task DeleteMessage(int messageId) => Client.DeleteMessage(Message.Chat.Id, messageId);
 
-    public async Task<Message?> InterceptMessage(int timeoutInMilliseconds = 60 * 60 * 1000, bool deleteAfterIntercept = false)
+    public async Task<IMessageInterceptResult> InterceptMessage(int? messageId = null, int timeoutInMilliseconds = 60 * 60 * 1000,
+        bool deleteAfterIntercept = false)
     {
-        _messageInterceptor ??= ServiceProvider.GetRequiredService<IMessageInterceptor>();
-        var message = await _messageInterceptor.InterceptMessage(Message.Chat.Id, timeoutInMilliseconds);
-        if (deleteAfterIntercept && message != null)
-            await DeleteMessage(message.Id);
+        var messageInterceptor = ServiceProvider.GetRequiredService<IMessageInterceptor>();
+        var message = await messageInterceptor.InterceptMessage(Message.Chat.Id, messageId, timeoutInMilliseconds);
+        if (deleteAfterIntercept && message.IsMessage)
+            await DeleteMessage(message.Message.Id);
         return message;
     }
 }

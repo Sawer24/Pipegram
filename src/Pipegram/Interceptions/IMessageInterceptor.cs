@@ -1,7 +1,12 @@
-﻿namespace Pipegram.Interceptions;
+﻿using Telegram.Bot.Types;
+
+namespace Pipegram.Interceptions;
 
 public interface IMessageInterceptor
 {
-    IDisposable SetInterceptor(long chatId, UpdateDelegate interceptor);
-    UpdateDelegate? UseInterceptor(long chatId);
+    public object SetInterceptor(long chatId, Func<Message, bool> onMessage,
+        Func<CallbackQuery, bool>? onCallbackQuery = null,
+        Action? onInterrupt = null);
+    public bool CancelInterceptor(object key);
+    public bool TryUseInterceptor(UpdateContext context);
 }

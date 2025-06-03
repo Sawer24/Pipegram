@@ -9,8 +9,6 @@ namespace Pipegram.Controllers;
 
 public abstract class CallbackQueryControllerBase : TelegramControllerBase
 {
-    private IMessageInterceptor? _messageInterceptor;
-
     public CallbackQuery CallbackQuery => Update.CallbackQuery
         ?? throw new InvalidOperationException("Update.CallbackQuery is null.");
     public Message Message => CallbackQuery.Message
@@ -28,12 +26,12 @@ public abstract class CallbackQueryControllerBase : TelegramControllerBase
     public Task DeleteMessage() => Client.DeleteMessage(Message.Chat.Id, Message.Id);
     public Task DeleteMessage(int messageId) => Client.DeleteMessage(Message.Chat.Id, messageId);
 
-    public async Task<Message?> InterceptMessage(int timeoutInMilliseconds = 60 * 60 * 1000, bool deleteAfterIntercept = false)
+    public async Task<IMessageInterceptResult> InterceptMessage(int timeoutInMilliseconds = 60 * 60 * 1000, bool deleteAfterIntercept = false)
     {
-        _messageInterceptor ??= ServiceProvider.GetRequiredService<IMessageInterceptor>();
-        var message = await _messageInterceptor.InterceptMessage(Message.Chat.Id, timeoutInMilliseconds);
-        if (deleteAfterIntercept && message != null)
-            await DeleteMessage(message.Id);
-        return message;
+        var messageInterceptor = ServiceProvider.GetRequiredService<IMessageInterceptor>();
+        var result = await messageInterceptor.InterceptMessage(Message.Chat.Id, Message.Id, timeoutInMilliseconds);
+        if (deleteAfterIntercept && result.IsMessage)
+            await DeleteMessage(result.Message.Id);
+        return result;
     }
 }

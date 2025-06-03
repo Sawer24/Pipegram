@@ -1,40 +1,74 @@
-﻿namespace Pipegram.Interceptions;
+﻿using Telegram.Bot.Types;
+
+namespace Pipegram.Interceptions;
 
 public class MessageInterceptor : IMessageInterceptor
 {
-    private readonly Dictionary<long, UpdateDelegate> _interceptors = [];
+    private readonly Dictionary<long, Interceptor> _accessors = [];
+    private readonly Dictionary<object, long> _ids = [];
 
-    public IDisposable SetInterceptor(long chatId, UpdateDelegate interceptor)
+    public object SetInterceptor(long chatId, Func<Message, bool> onMessage,
+        Func<CallbackQuery, bool>? onCallbackQuery = null,
+        Action? onInterrupt = null)
     {
-        lock (_interceptors)
-            _interceptors[chatId] = interceptor;
-        return new DisposableAction(() =>
+        var interceptor = new Interceptor(onMessage, onCallbackQuery, onInterrupt);
+        lock (_accessors)
         {
-            lock (_interceptors)
-                if (_interceptors.TryGetValue(chatId, out var actualInterceptor)
-                    && actualInterceptor == interceptor)
-                    _interceptors.Remove(chatId);
-        });
+            if (_accessors.TryGetValue(chatId, out var actualInterceptor))
+                actualInterceptor.Interrupt?.Invoke();
+            _accessors[chatId] = interceptor;
+            _ids[interceptor] = chatId;
+        }
+        return interceptor;
     }
 
-    public UpdateDelegate? UseInterceptor(long chatId)
+    public bool CancelInterceptor(object key)
     {
-        lock (_interceptors)
+        lock (_accessors)
         {
-            if (_interceptors.TryGetValue(chatId, out var interceptor))
-                _interceptors.Remove(chatId);
-            return interceptor;
+            if (!_ids.TryGetValue(key, out var chatId) || !_accessors.TryGetValue(chatId, out var interceptor))
+                return false;
+
+            _accessors.Remove(chatId);
+            _ids.Remove(key);
+            return true;
         }
     }
 
-    private class DisposableAction(Action action) : IDisposable
+    public bool TryUseInterceptor(UpdateContext context)
     {
-        private Action? _action = action;
-
-        public void Dispose()
+        if (context.Update.Message is { } message)
         {
-            _action?.Invoke();
-            _action = null;
+            lock (_accessors)
+            {
+                if (!_accessors.TryGetValue(message.Chat.Id, out var interceptor)
+                    || !interceptor.Message(message))
+                    return false;
+                _accessors.Remove(message.Chat.Id);
+                _ids.Remove(interceptor);
+                return true;
+            }
         }
+        if (!(context.Update.CallbackQuery is { Message: Message callbackQueryMessage } callbackQuery))
+            return false;
+
+        lock (_accessors)
+        {
+            if (!_accessors.TryGetValue(callbackQueryMessage.Chat.Id, out var interceptor) ||
+                (interceptor.CallbackQuery?.Invoke(callbackQuery)) != true)
+                return false;
+            _accessors.Remove(callbackQueryMessage.Chat.Id);
+            _ids.Remove(interceptor);
+            return true;
+        }
+    }
+
+    private class Interceptor(Func<Message, bool> onMessage,
+        Func<CallbackQuery, bool>? onCallbackQuery = null,
+        Action? onInterrupt = null)
+    {
+        public Func<Message, bool> Message { get; } = onMessage;
+        public Func<CallbackQuery, bool>? CallbackQuery { get; } = onCallbackQuery;
+        public Action? Interrupt { get; } = onInterrupt;
     }
 }

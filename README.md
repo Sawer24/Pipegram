@@ -15,7 +15,7 @@ var bot = builder.Build();
 bot.UseRouting();
 bot.UseEndpoints();
 
-bot.MapMessage("/start", (UpdateContext context) => Results.SendMessage("Hello, World!"));
+bot.MapMessage("/start", () => Results.SendMessage("Hello, World!"));
 
 await bot.RunAsync();
 ```
@@ -59,11 +59,11 @@ class LoginController : MessageControllerBase
     public async Task Start()
     {
         await SendMessage("Please sent your firstname:");
-        var firstname = (await InterceptMessage())!.Text;
+        var firstname = (await InterceptMessage())!.Message!.Text;
         await SendMessage("Please sent your lastname:");
-        var lastname = (await InterceptMessage())!.Text;
+        var lastname = (await InterceptMessage())!.Message!.Text;
         await SendMessage("Please sent your email address:");
-        var email = (await InterceptMessage())!.Text;
+        var email = (await InterceptMessage())!.Message!.Text;
         await SendMessage($"Your details:\nFirstname: {firstname}\nLastname: {lastname}\nEmail: {email}");
     }
 }
