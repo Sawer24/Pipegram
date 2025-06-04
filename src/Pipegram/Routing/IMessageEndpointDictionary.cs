@@ -6,6 +6,6 @@ public interface IMessageEndpointDictionary
 {
     void Add(string[] keys, IEndpoint value);
     void Remove(string[] keys);
-    bool TryGetValue(string[] keys, [MaybeNullWhen(false)] out IEndpoint? endpoint,
-        [MaybeNullWhen(false)] out string[]? remainingKeys);
+    bool TryGetValue(string[] keys, [MaybeNullWhen(false)] out IEndpoint endpoint,
+        [MaybeNullWhen(false)] out string[] remainingKeys);
 }

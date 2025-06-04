@@ -7,7 +7,7 @@ namespace Pipegram.Binders;
 
 public class DefaultControllerActionBinder : IControllerActionBinder
 {
-    public Func<TelegramControllerBase, UpdateContext, Task> CreateActionDelegate(Type controllerType, MethodInfo method)
+    public Func<TelegramControllerBase?, UpdateContext, Task> CreateActionDelegate(Type controllerType, MethodInfo method)
     {
         var controllerParameter = Expression.Parameter(typeof(TelegramControllerBase), "controller");
         var contextParameter = Expression.Parameter(typeof(UpdateContext), "context");
@@ -41,11 +41,29 @@ public class DefaultControllerActionBinder : IControllerActionBinder
                     parameters[i].ParameterType);
             }
         }
-        var call = (Expression)Expression.Call(Expression.TypeAs(controllerParameter, controllerType), method, expressions);
+        Expression call;
+        if (!method.IsStatic)
+            call = Expression.Call(Expression.TypeAs(controllerParameter, controllerType), method, expressions);
+        else
+            call = Expression.Call(method, expressions);
+
+        if (typeof(IResult).IsAssignableFrom(call.Type))
+            call = Expression.Call(call, typeof(IResult).GetMethod(nameof(IResult.Execute))!, contextParameter);
+
+        if (call.Type.IsGenericType && call.Type.GetGenericTypeDefinition() == typeof(Task<>)
+            && typeof(IResult).IsAssignableFrom(call.Type.GetGenericArguments()[0]))
+        {
+            var executeAsync = typeof(DefaultControllerActionBinder).GetMethod(nameof(ExecuteAsync))!;
+            call = Expression.Call(executeAsync, call, contextParameter);
+        }
+        
         if (!typeof(Task).IsAssignableFrom(call.Type))
             call = Expression.Block(call, Expression.Constant(Task.CompletedTask));
+        
         var body = Expression.Block([argsVariable], setArgs, call);
-        var lambda = Expression.Lambda<Func<TelegramControllerBase, UpdateContext, Task>>(body, controllerParameter, contextParameter);
+        var lambda = Expression.Lambda<Func<TelegramControllerBase?, UpdateContext, Task>>(body, controllerParameter, contextParameter);
         return lambda.Compile();
     }
+
+    public static async Task ExecuteAsync(Task<IResult> task, UpdateContext context) => await (await task).Execute(context);
 }

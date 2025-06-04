@@ -29,7 +29,7 @@ public class MessageEndpointDictionary : IMessageEndpointDictionary
         }
     }
 
-    public bool TryGetValue(string[] keys, [MaybeNullWhen(false)] out IEndpoint? endpoint, [MaybeNullWhen(false)] out string[]? remainingKeys)
+    public bool TryGetValue(string[] keys, [MaybeNullWhen(false)] out IEndpoint endpoint, [MaybeNullWhen(false)] out string[] remainingKeys)
     {
         var node = _root;
         var lastMatched = default(IEndpoint);

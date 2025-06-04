@@ -1,4 +1,5 @@
-﻿using Telegram.Bot;
+﻿using Pipegram.Routing;
+using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
@@ -31,9 +32,9 @@ public abstract class TelegramControllerBase
     {
     }
 
-    public static InlineKeyboardMarkup InlineKeyboardMarkup(params InlineKeyboardButton[] buttons) => new(buttons);
+    public Task Execute(IResult result) => result.Execute(Context);
 
-    public static InlineKeyboardMarkup InlineKeyboardMarkup(params InlineKeyboardButton[][] rows) => new(rows);
+    public Task ShowView(ViewBase view) => view.Execute(Context);
 
     public static InlineKeyboardButton CallbackButton(string text, string action, params string[] args)
         => InlineKeyboardButton.WithCallbackData(text, args.Length == 0 ? action : action + ' ' + string.Join(' ', args));

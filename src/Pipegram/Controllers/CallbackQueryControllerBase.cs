@@ -26,12 +26,18 @@ public abstract class CallbackQueryControllerBase : TelegramControllerBase
     public Task DeleteMessage() => Client.DeleteMessage(Message.Chat.Id, Message.Id);
     public Task DeleteMessage(int messageId) => Client.DeleteMessage(Message.Chat.Id, messageId);
 
-    public async Task<IMessageInterceptResult> InterceptMessage(int timeoutInMilliseconds = 60 * 60 * 1000, bool deleteAfterIntercept = false)
+    public async Task<IMessageInterceptResult> InterceptMessage(int? timeoutInMilliseconds = 60 * 60 * 1000, bool deleteAfterIntercept = false)
     {
         var messageInterceptor = ServiceProvider.GetRequiredService<IMessageInterceptor>();
         var result = await messageInterceptor.InterceptMessage(Message.Chat.Id, Message.Id, timeoutInMilliseconds);
         if (deleteAfterIntercept && result.IsMessage)
             await DeleteMessage(result.Message.Id);
         return result;
+    }
+
+    public Task<ICallbackQueryInterceptResult> InterceptCallbackQuery(int? timeoutInMilliseconds = 60 * 60 * 1000)
+    {
+        var callbackQueryInterceptor = ServiceProvider.GetRequiredService<ICallbackQueryInterceptor>();
+        return callbackQueryInterceptor.InterceptCallbackQuery(Message.Chat.Id, Message.Id, timeoutInMilliseconds);
     }
 }

@@ -26,7 +26,7 @@ public class MessageInterceptor : IMessageInterceptor
     {
         lock (_accessors)
         {
-            if (!_ids.TryGetValue(key, out var chatId) || !_accessors.TryGetValue(chatId, out var interceptor))
+            if (!_ids.TryGetValue(key, out var chatId))
                 return false;
 
             _accessors.Remove(chatId);

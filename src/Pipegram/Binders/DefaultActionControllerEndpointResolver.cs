@@ -22,7 +22,7 @@ public class DefaultActionControllerEndpointResolver(IControllerFactoryBinder co
         var actions = new List<(ActionAttribute actionAttribute, MethodInfo method)>();
         foreach (var method in controllerType.GetMethods())
         {
-            if (method.IsSpecialName || method.IsStatic)
+            if (method.IsSpecialName)
                 continue;
             foreach (var actionAttribute in method.GetCustomAttributes<ActionAttribute>())
                 actions.Add((actionAttribute, method));
@@ -36,15 +36,12 @@ public class DefaultActionControllerEndpointResolver(IControllerFactoryBinder co
             var name = routeAttribute?.Route + actionAttribute.Name;
             var metadata = (object[])[.. controllerMetadata, .. GetMetadata(method)];
             var invoker = _controllerActionBinder.CreateActionDelegate(controllerType, method);
-            var endpoint = new Endpoint(UpdateDelegate, new EndpointMetadataCollection(metadata), name);
+            UpdateDelegate updateDelegate = method.IsStatic ? StaticUpdateDelegate : UpdateDelegate;
+            var endpoint = new Endpoint(updateDelegate, new EndpointMetadataCollection(metadata), name);
             endpoints[i] = (name, endpoint);
 
-            Task UpdateDelegate(UpdateContext context)
-            {
-                var controller = controllerFactory(context);
-                controller.Initialize(context);
-                return invoker(controller, context);
-            }
+            Task StaticUpdateDelegate(UpdateContext context) => invoker(null, context);
+            Task UpdateDelegate(UpdateContext context) => invoker(controllerFactory(context).Initialize(context), context);
         }
         return endpoints;
     }

@@ -12,6 +12,7 @@ public static class CallbackQueryRouter_ServiceCollectionExtensions
     {
         services.AddRouting();
         services.TryAddSingleton<IMessageInterceptor, MessageInterceptor>();
+        services.TryAddSingleton<ICallbackQueryInterceptor, CallbackQueryInterceptor>();
         services.TryAddSingleton<IControllerFactoryBinder, DefaultControllerFactoryBinder>();
         services.TryAddSingleton<IControllerActionBinder, DefaultControllerActionBinder>();
         services.TryAddSingleton<IActionControllerEndpointResolver, DefaultActionControllerEndpointResolver>();
