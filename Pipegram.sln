@@ -5,6 +5,8 @@ VisualStudioVersion = 17.13.35931.197
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pipegram", "src\Pipegram\Pipegram.csproj", "{7D0E53C4-8B6A-06A3-75A2-227599C777C3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mvc", "examples\Mvc\Mvc.csproj", "{D15DA3ED-5E29-4237-B5AE-FB8327077203}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{7D0E53C4-8B6A-06A3-75A2-227599C777C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7D0E53C4-8B6A-06A3-75A2-227599C777C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7D0E53C4-8B6A-06A3-75A2-227599C777C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D15DA3ED-5E29-4237-B5AE-FB8327077203}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D15DA3ED-5E29-4237-B5AE-FB8327077203}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D15DA3ED-5E29-4237-B5AE-FB8327077203}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D15DA3ED-5E29-4237-B5AE-FB8327077203}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
