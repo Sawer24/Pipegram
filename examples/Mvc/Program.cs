@@ -1,30 +1,30 @@
-﻿using Telegram.Bot;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Mvc.Services;
+using Mvc.Views;
 using Pipegram;
+using Pipegram.Controllers;
+using Pipegram.Controllers.CallbackQueries;
 using Pipegram.Interceptions;
 using Pipegram.Routing;
-using Pipegram.Controllers;
-using Mvc.Controllers;
-using Mvc.Views;
-using Microsoft.Extensions.DependencyInjection;
-using Mvc.Services;
+using Pipegram.Routing.Messages;
+using Telegram.Bot;
 
 var token = File.ReadAllText(File.Exists("TOKEN.txt") ? "TOKEN.txt" : "../../../../../TOKEN.txt");
 var options = new TelegramBotClientOptions(token);
-var builder = TelegramBotBuilder.CreateBuilder(options);
+var builder = TelegramApplicationBuilder.CreateBuilder(options);
 
 builder.Services.AddSingleton<IItemService, ItemService>();
 
 builder.Services.AddMessageRouting();
-builder.Services.AddCallbackQueryRouting();
+builder.Services.AddCallbackQueryControllers();
 
-var bot = builder.Build();
+var application = builder.Build();
 
-bot.UseInterceptors();
-bot.UseRouting();
-bot.UseEndpoints();
+application.UseInterceptors();
+application.UseRouting();
+application.UseEndpoints();
 
-bot.MapMessage("/start", () => new HomeMenuView());
-bot.MapCallbackQueryController<HomeController>();
-bot.MapCallbackQueryController<ItemsController>();
+application.MapMessage("/start", () => new HomeMenuView());
+application.MapControllers();
 
-await bot.RunAsync();
+application.Run();

@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Pipegram.Binders;
 
-public class DefaultControllerActionBinder : IControllerActionBinder
+public class DefaultControllerActionBinder
 {
     public Func<TelegramControllerBase?, UpdateContext, Task> CreateActionDelegate(Type controllerType, MethodInfo method)
     {
@@ -21,7 +21,7 @@ public class DefaultControllerActionBinder : IControllerActionBinder
         var argsVariable = Expression.Variable(typeof(string[]), "args");
         var setArgs = Expression.Assign(argsVariable,
             Expression.TypeAs(Expression.Property(Expression.Property(contextParameter, nameof(UpdateContext.Items)), "Item",
-            Expression.Constant(ActionRouter.ActionArgsKey)), typeof(string[])));
+            Expression.Constant(RouterConstants.ActionArgsKey)), typeof(string[])));
 
         var argsId = 0;
         var expressions = new Expression[parameters.Length];

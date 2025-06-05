@@ -12,7 +12,7 @@ public class SendMessageResult(string text, ParseMode parseMode = ParseMode.None
 
     public Task Execute(UpdateContext context)
     {
-        var client = context.TelegramBot.Client
+        var client = context.BotClient
             ?? throw new ArgumentException("TelegramBot.Client is null.", nameof(context));
 
         var chatId = context.Update.Message?.Chat.Id

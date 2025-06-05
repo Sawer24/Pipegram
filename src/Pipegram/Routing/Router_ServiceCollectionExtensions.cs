@@ -1,13 +1,14 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Pipegram.Routing;
 
 public static class Router_ServiceCollectionExtensions
 {
-    public static IServiceCollection AddRouting(this IServiceCollection services)
+    public static IServiceCollection TryAddRouter<T>(this IServiceCollection services)
+        where T : class, IRouter
     {
-        services.TryAddSingleton<IRouterDictionary, RouterDictionary>();
+        if (!services.Any(d => d.ServiceType == typeof(IRouter) && d.ImplementationType == typeof(T)))
+            services.AddSingleton<IRouter, T>();
         return services;
     }
 }

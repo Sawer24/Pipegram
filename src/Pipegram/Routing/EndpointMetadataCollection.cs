@@ -9,7 +9,7 @@ public class EndpointMetadataCollection
     private readonly object[] _items;
     private readonly ConcurrentDictionary<Type, object[]> _cache;
 
-    public IReadOnlyCollection<object> Items => _items;
+    public IReadOnlyList<object> Items => _items;
 
     /// <summary>
     /// Creates a new <see cref="EndpointMetadataCollection"/>.

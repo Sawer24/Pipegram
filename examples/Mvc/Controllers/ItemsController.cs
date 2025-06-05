@@ -1,6 +1,6 @@
 ﻿using Mvc.Services;
 using Mvc.Views;
-using Pipegram.Controllers;
+using Pipegram.Controllers.CallbackQueries;
 using Pipegram.Routing;
 using Telegram.Bot.Types.ReplyMarkups;
 

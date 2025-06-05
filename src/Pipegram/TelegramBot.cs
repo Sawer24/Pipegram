@@ -9,58 +9,44 @@ namespace Pipegram;
 public class TelegramBot(TelegramBotClientOptions options,
     IServiceProvider services, ILogger<TelegramBot> logger) : ITelegramBot
 {
-    private const string UpdateUnhandledKey = "__UpdateUnhandled";
-
+    private readonly IServiceProvider _services = services;
     private readonly TelegramBotClientOptions _options = options;
     private readonly ILogger<TelegramBot> _logger = logger;
 
-    private readonly List<Func<UpdateDelegate, UpdateDelegate>> _components = [];
     private UpdateDelegate? _pipeline;
+
     private TelegramBotClient? _client;
+    private User? _botUser;
 
-    public IServiceProvider Services { get; } = services;
-    public ITelegramBotClient? Client => _client;
-    public User? BotUser { get; private set; }
-
-    public ITelegramBot Use(Func<UpdateDelegate, UpdateDelegate> middleware)
+    public ITelegramBot Use(UpdateDelegate pipeline)
     {
-        _components.Add(middleware);
+        if (_client is not null)
+            throw new InvalidOperationException("Middleware pipeline cannot be set after the bot has started.");
+        _pipeline = pipeline;
         return this;
     }
 
     public async Task RunAsync(CancellationToken stoppingToken = default)
     {
-        _pipeline = BuildPipeline();
+        if (_pipeline is null)
+            throw new InvalidOperationException("Middleware pipeline is not set. Use Use() method to set it.");
         _client = new TelegramBotClient(_options, cancellationToken: stoppingToken);
         _client.OnUpdate += Client_OnUpdate;
         _client.OnError += Client_OnError;
-        BotUser = await _client.GetMe(cancellationToken: stoppingToken);
+        _botUser = await _client.GetMe(cancellationToken: stoppingToken);
         await Task.Delay(-1, stoppingToken);
-    }
-
-    private UpdateDelegate BuildPipeline()
-    {
-        UpdateDelegate pipeline = context =>
-        {
-            context.Items[UpdateUnhandledKey] = true;
-            return Task.CompletedTask;
-        };
-
-        for (var c = _components.Count - 1; c >= 0; c--)
-            pipeline = _components[c](pipeline);
-
-        return pipeline;
     }
 
     private Task Client_OnUpdate(Update update)
     {
         _ = Task.Run(async () =>
         {
-            await using var scope = Services.CreateAsyncScope();
+            await using var scope = _services.CreateAsyncScope();
             var context = new UpdateContext
             {
-                TelegramBot = this,
                 Update = update,
+                BotClient = _client!,
+                BotUser = _botUser!,
                 Services = scope.ServiceProvider,
                 CancellationToken = _client!.GlobalCancelToken
             };

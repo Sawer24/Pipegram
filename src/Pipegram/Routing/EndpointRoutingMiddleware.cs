@@ -1,15 +1,26 @@
 ﻿namespace Pipegram.Routing;
 
-public class EndpointRoutingMiddleware(UpdateDelegate next, IRouterDictionary routerDictionary)
+public class EndpointRoutingMiddleware(UpdateDelegate next, IEnumerable<IRouter> routers)
 {
     private readonly UpdateDelegate _next = next;
-    private readonly IRouterDictionary _routerDictionary = routerDictionary;
+    private readonly IRouter[] _routers = [.. routers];
 
-    public async Task Invoke(UpdateContext context)
+    public Task Invoke(UpdateContext context)
     {
-        if (context.GetEndpoint() is null 
-            && _routerDictionary.TryGetValue(context.Update.Type, out var router))
-            await router.Match(context);
+        for (var i = 0; context.GetEndpoint() is null && i < _routers.Length; i++)
+        {
+            var matchTask = _routers[i].Match(context);
+            if (!matchTask.IsCompletedSuccessfully)
+                return InvokeAsync(context, matchTask, i + 1);
+        }
+        return _next(context);
+    }
+
+    private async Task InvokeAsync(UpdateContext context, Task lastMatch, int i)
+    {
+        await lastMatch;
+        for (; context.GetEndpoint() is null && i < _routers.Length; i++)
+            await _routers[i].Match(context);
         await _next(context);
     }
 }

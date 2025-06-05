@@ -1,5 +1,6 @@
 ﻿using Pipegram.Routing;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Pipegram.Binders;
 
@@ -21,7 +22,7 @@ public class DefaultActionUpdateDelegateBinder : IActionUpdateDelegateBinder
         var argsVariable = Expression.Variable(typeof(string[]), "args");
         var setArgs = Expression.Assign(argsVariable,
             Expression.TypeAs(Expression.Property(Expression.Property(contextParameter, nameof(UpdateContext.Items)), "Item",
-            Expression.Constant(ActionRouter.ActionArgsKey)), typeof(string[])));
+            Expression.Constant(RouterConstants.ActionArgsKey)), typeof(string[])));
 
         var argsId = 0;
         var expressions = new Expression[parameters.Length];
@@ -42,12 +43,26 @@ public class DefaultActionUpdateDelegateBinder : IActionUpdateDelegateBinder
             }
         }
         var call = (Expression)Expression.Call(Expression.Constant(target), method, expressions);
+
+
         if (typeof(IResult).IsAssignableFrom(call.Type))
             call = Expression.Call(call, typeof(IResult).GetMethod(nameof(IResult.Execute))!, contextParameter);
+
+        if (call.Type.IsGenericType && call.Type.GetGenericTypeDefinition() == typeof(Task<>)
+            && typeof(IResult).IsAssignableFrom(call.Type.GetGenericArguments()[0]))
+        {
+            var executeAsync = typeof(DefaultControllerActionBinder).GetMethod(nameof(ExecuteAsync), BindingFlags.NonPublic)!;
+            call = Expression.Call(executeAsync, call, contextParameter);
+        }
+
         if (!typeof(Task).IsAssignableFrom(call.Type))
             call = Expression.Block(call, Expression.Constant(Task.CompletedTask));
+
+
         var body = Expression.Block([argsVariable], setArgs, call);
         var lambda = Expression.Lambda<UpdateDelegate>(body, contextParameter);
         return lambda.Compile();
     }
+
+    private static async Task ExecuteAsync(Task<IResult> task, UpdateContext context) => await (await task).Execute(context);
 }

@@ -3,6 +3,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace Pipegram.Routing;
 
+/// <summary>A factory for <see cref="IResult"/>.</summary>
 public static class Results
 {
     public static IResult Nothing() => NothingResult.Instance;

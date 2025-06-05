@@ -7,7 +7,13 @@ public class EndpointMiddleware(UpdateDelegate next)
     public Task Invoke(UpdateContext context)
     {
         var endpoint = context.GetEndpoint();
-        return endpoint?.UpdateDelegate?.Invoke(context)
-            ?? _next(context);
+        
+        if (endpoint is null)
+            return _next(context);
+
+        if (endpoint.UpdateDelegate is null)
+            return Task.CompletedTask;
+
+        return endpoint.UpdateDelegate.Invoke(context);
     }
 }

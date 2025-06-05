@@ -14,25 +14,22 @@ public abstract class ViewBase : IResult
 
     public Task Execute(UpdateContext context)
     {
-        var client = context.TelegramBot.Client
+        var client = context.BotClient
             ?? throw new ArgumentException("TelegramBot.Client is null.", nameof(context));
 
         var text = this.text.ToString();
         if (string.IsNullOrEmpty(text))
             throw new InvalidOperationException("View text cannot be null or empty.");
 
-        switch (context.Update.Type)
+        if (context.Update.Message is Message message)
+            return client.SendMessage(message.Chat, text, parseMode, replyMarkup: keyboard);
+
+        if (context.Update.CallbackQuery is CallbackQuery callbackQuery)
         {
-            case UpdateType.Message:
-                return client.SendMessage(context.Update.Message!.Chat, text, parseMode, replyMarkup: keyboard);
-
-            case UpdateType.CallbackQuery:
-                if (context.Update.CallbackQuery!.Message is Message message)
-                    return client.EditMessageText(message.Chat, message.Id, text, parseMode, replyMarkup: keyboard);
-                return client.SendMessage(context.Update.CallbackQuery.From.Id, text, parseMode, replyMarkup: keyboard);
-
-            default:
-                throw new ArgumentException($"Unsupported update type: {context.Update.Type}", nameof(context));
+            if (callbackQuery.Message is Message callbackMessage)
+                return client.EditMessageText(callbackMessage.Chat, callbackMessage.Id, text, parseMode, replyMarkup: keyboard);
+            return client.SendMessage(context.Update.CallbackQuery.From.Id, text, parseMode, replyMarkup: keyboard);
         }
+        throw new ArgumentException($"Unsupported update type: {context.Update.Type}", nameof(context));
     }
 }

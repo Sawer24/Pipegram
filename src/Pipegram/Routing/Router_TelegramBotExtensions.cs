@@ -2,15 +2,15 @@
 
 public static class Router_TelegramBotExtensions
 {
-    public static ITelegramBot UseRouting(this ITelegramBot bot)
+    public static ITelegramApplication UseRouting(this ITelegramApplication application)
     {
-        bot.UseMiddleware<EndpointRoutingMiddleware>();
-        return bot;
+        application.UseMiddleware<EndpointRoutingMiddleware>();
+        return application;
     }
 
-    public static ITelegramBot UseEndpoints(this ITelegramBot bot)
+    public static ITelegramApplication UseEndpoints(this ITelegramApplication application)
     {
-        bot.UseMiddleware<EndpointMiddleware>();
-        return bot;
+        application.UseMiddleware<EndpointMiddleware>();
+        return application;
     }
 }
