@@ -10,7 +10,9 @@ public static class MessageController_ServiceCollectionExtensions
     {
         services.AddControllers();
         services.AddMessageRouting();
-        services.TryAddSingleton<IEndpointRegistrar<TextMessageActionAttribute>, DefaultTextMessageEndpointRegistrar>();
+        services.TryAddSingleton<DefaultTextMessageEndpointRegistrar>();
+        services.TryAddSingleton<IEndpointRegistrar<TextMessageActionAttribute>>(p => p.GetRequiredService<DefaultTextMessageEndpointRegistrar>());
+        services.TryAddSingleton<IEndpointRegistrar<StartActionAttribute>>(p => p.GetRequiredService<DefaultTextMessageEndpointRegistrar>());
         return services;
     }
 }

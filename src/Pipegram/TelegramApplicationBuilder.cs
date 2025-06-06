@@ -16,7 +16,9 @@ public class TelegramApplicationBuilder : ITelegramApplicationBuilder
         Services.AddTelegramBot(options);
     }
 
-    public ITelegramApplication Build()
+    ITelegramApplication ITelegramApplicationBuilder.Build() => Build();
+
+    public TelegramApplication Build()
     {
         var provider = Services.BuildServiceProvider();
         return new TelegramApplication(provider);

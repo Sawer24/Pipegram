@@ -8,7 +8,7 @@ public static class Endpoints
     {
         public const string Base = VersionBase + "/home";
 
-        public const string Menu = Base + "/menu";
+        public const string Start = Base + "/start";
         public const string About = Base + "/about";
         public const string Contact = Base + "/contact";
     }

@@ -7,6 +7,6 @@ public class HomeContactView : ViewBase
     public HomeContactView()
     {
         text.Append("Contacts");
-        keyboard.AddNewRow(("Back to menu", Endpoints.Home.Menu));
+        keyboard.AddNewRow(("Back to menu", Endpoints.Home.Start));
     }
 }

@@ -19,6 +19,6 @@ public class ItemsListView : ViewBase
             text.Append("No items.");
 
         keyboard.AddNewRow(("Create item", Endpoints.Items.Create));
-        keyboard.AddNewRow(("Back to menu", Endpoints.Home.Menu));
+        keyboard.AddNewRow(("Back to menu", Endpoints.Home.Start));
     }
 }

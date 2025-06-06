@@ -7,7 +7,8 @@ using System.Reflection;
 namespace Pipegram.Controllers.Messages;
 
 public class DefaultTextMessageEndpointRegistrar(ITextMessageEndpointDictionary textMessageEndpointDictionary,
-    IControllerFactoryBinder? controllerFactoryBinder = null) : IEndpointRegistrar<TextMessageActionAttribute>
+    IControllerFactoryBinder? controllerFactoryBinder = null)
+    : IEndpointRegistrar<TextMessageActionAttribute>, IEndpointRegistrar<StartActionAttribute>
 {
     private readonly ITextMessageEndpointDictionary _textMessageEndpointDictionary = textMessageEndpointDictionary;
     private readonly IControllerFactoryBinder _controllerFactoryBinder = controllerFactoryBinder
@@ -37,7 +38,7 @@ public class DefaultTextMessageEndpointRegistrar(ITextMessageEndpointDictionary 
 
     private static Func<object?, UpdateContext, Task> CreateActionDelegate(Type controllerType, MethodInfo method)
     {
-        var controllerParameter = Expression.Parameter(typeof(TelegramControllerBase), "controller");
+        var controllerParameter = Expression.Parameter(typeof(object), "controller");
         var contextParameter = Expression.Parameter(typeof(UpdateContext), "context");
 
         var parameters = method.GetParameters();

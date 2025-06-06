@@ -2,9 +2,9 @@
 
 namespace Mvc.Views;
 
-public class HomeMenuView : ViewBase
+public class HomeStartView : ViewBase
 {
-    public HomeMenuView()
+    public HomeStartView()
     {
         text.Append("Welcome to the Pipegram MVC example!");
         keyboard.AddNewRow(("Items list", Endpoints.Items.List));
